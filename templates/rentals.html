@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Rentals - Sakila DB{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Rentals</h1>
+</div>
+
+<!-- Status Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="btn-group w-100" role="group">
+                    <a href="{{ url_for('rentals', status='active') }}" 
+                       class="btn {{ 'btn-primary' if status == 'active' else 'btn-outline-primary' }}">
+                       Active Rentals
+                    </a>
+                    <a href="{{ url_for('rentals', status='returned') }}" 
+                       class="btn {{ 'btn-success' if status == 'returned' else 'btn-outline-success' }}">
+                       Returned Rentals
+                    </a>
+                    <a href="{{ url_for('rentals', status='all') }}" 
+                       class="btn {{ 'btn-info' if status == 'all' else 'btn-outline-info' }}">
+                       All Rentals
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="badge bg-secondary fs-6">
+                    {% if status == 'active' %}
+                        Showing Active Rentals
+                    {% elif status == 'returned' %}
+                        Showing Returned Rentals
+                    {% else %}
+                        Showing All Rentals
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Rental ID</th>
+                <th>Film</th>
+                <th>Customer</th>
+                <th>Staff</th>
+                <th>Rental Date</th>
+                <th>Return Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rental in rentals %}
+            <tr>
+                <td>{{ rental.rental_id }}</td>
+                <td>
+                    <strong>{{ rental.title }}</strong>
+                </td>
+                <td>{{ rental.first_name }} {{ rental.last_name }}</td>
+                <td>{{ rental.staff_first }} {{ rental.staff_last }}</td>
+                <td>{{ rental.rental_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% if rental.return_date %}
+                        {{ rental.return_date.strftime('%Y-%m-%d %H:%M') }}
+                    {% else %}
+                        <span class="badge bg-warning">Not Returned</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if rental.return_date %}
+                    <span class="badge bg-success">Returned</span>
+                    {% else %}
+                    <span class="badge bg-danger">Active</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if not rental.return_date %}
+                    <form method="POST" action="{{ url_for('return_rental', rental_id=rental.rental_id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Mark this rental as returned?')">
+                            <i class="fas fa-undo me-1"></i>Return
+                        </button>
+                    </form>
+                    {% endif %}
+                    <a href="{{ url_for('film_detail', film_id=rental.film_id) }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-film me-1"></i>Film
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<nav aria-label="Rental pagination">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {{ 'disabled' if page == 1 }}">
+            <a class="page-link" href="{{ url_for('rentals', page=page-1, status=status) }}">Previous</a>
+        </li>
+        {% for p in range(1, total_pages + 1) %}
+        <li class="page-item {{ 'active' if p == page }}">
+            <a class="page-link" href="{{ url_for('rentals', page=p, status=status) }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+        <li class="page-item {{ 'disabled' if page == total_pages }}">
+            <a class="page-link" href="{{ url_for('rentals', page=page+1, status=status) }}">Next</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

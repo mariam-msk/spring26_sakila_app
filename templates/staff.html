@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Staff - Sakila DB{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Staff Members</h1>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Username</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>Country</th>
+                <th>Status</th>
+                <th>Last Update</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for staff in staff_list %}
+            <tr>
+                <td>{{ staff.staff_id }}</td>
+                <td>
+                    <strong>{{ staff.first_name }} {{ staff.last_name }}</strong>
+                </td>
+                <td>{{ staff.email }}</td>
+                <td>{{ staff.username }}</td>
+                <td>{{ staff.address }}, {{ staff.district }}</td>
+                <td>{{ staff.city }}</td>
+                <td>{{ staff.country }}</td>
+                <td>
+                    {% if staff.active %}
+                    <span class="badge bg-success">Active</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>{{ staff.last_update.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    <span class="badge bg-info">{{ staff.rental_count }} rentals processed</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Staff Statistics</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Total Staff Members:</strong> {{ staff_list|length }}</p>
+                <p><strong>Active Staff:</strong> {{ staff_list|selectattr('active')|list|length }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

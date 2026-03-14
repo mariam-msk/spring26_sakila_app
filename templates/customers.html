@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Customers - Sakila DB{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Customers</h1>
+</div>
+
+<!-- Search -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-8">
+                <input type="text" class="form-control" name="search" placeholder="Search customers by name or email..." value="{{ search }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>Country</th>
+                <th>Status</th>
+                <th>Member Since</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td>{{ customer.customer_id }}</td>
+                <td>
+                    <strong>{{ customer.first_name }} {{ customer.last_name }}</strong>
+                </td>
+                <td>{{ customer.email }}</td>
+                <td>{{ customer.address }}, {{ customer.district }}</td>
+                <td>{{ customer.city }}</td>
+                <td>{{ customer.country }}</td>
+                <td>
+                    {% if customer.active %}
+                    <span class="badge bg-success">Active</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>{{ customer.create_date.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    <a href="{{ url_for('customer_rentals', customer_id=customer.customer_id) }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-list me-1"></i>Rentals ({{ customer.rental_count }})
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<nav aria-label="Customer pagination">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {{ 'disabled' if page == 1 }}">
+            <a class="page-link" href="{{ url_for('customers', page=page-1, search=search) }}">Previous</a>
+        </li>
+        {% for p in range(1, total_pages + 1) %}
+        <li class="page-item {{ 'active' if p == page }}">
+            <a class="page-link" href="{{ url_for('customers', page=p, search=search) }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+        <li class="page-item {{ 'disabled' if page == total_pages }}">
+            <a class="page-link" href="{{ url_for('customers', page=page+1, search=search) }}">Next</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
