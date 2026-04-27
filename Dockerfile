@@ -1,21 +1,45 @@
-# Use an official Python runtime as a base image
+# ============================================================
+# Dockerfile — Optimized Sakila Flask Application
+# Maintainer: Mariam Saghir
+# Version: 1.0.0
+# ============================================================
+
+# Stage 1: Use slim image to reduce size
 FROM python:3.9-slim
 
-# Set the working directory inside the container
+# Labels for metadata
+LABEL maintainer="mariamsaghir666@gmail.com" \
+      version="1.0.0" \
+      description="Sakila Flask Application — Assignment2"
+
+# Set working directory
 WORKDIR /app
 
-# Copy the requirements file into the container at /app
+# Install system dependencies needed by pymysql/cryptography
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# COPY requirements.txt FIRST to leverage Docker layer caching
+# If only app code changes (not requirements), this layer is reused
 COPY requirements.txt .
 
-# Install the required Python packages
+# Install Python dependencies in one RUN command (fewer layers)
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your application into the container
+# Copy application code AFTER dependencies (cache-friendly order)
 COPY . .
 
-# Expose the port Flask will run on
+# Create non-root user for security
+RUN useradd -m -r appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Only expose the port this app actually uses
 EXPOSE 5000
 
+# Health check so Docker knows when the app is truly ready
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/ || exit 1
 
-# Run the Flask application
+# Run the application
 CMD ["python", "app.py"]
