@@ -14,7 +14,7 @@ env:
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, feature/ci-pipeline]
   pull_request:
     branches: [main]
 
