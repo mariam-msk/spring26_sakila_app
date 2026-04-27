@@ -17,6 +17,9 @@ on:
       # Explicitly ignore docs
       # (push paths filtering handles this — we whitelist what matters)
 
+permissions:
+  contents: write   
+
 jobs:
 
   # ─────────────────────────────────────────────
