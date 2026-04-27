@@ -49,8 +49,14 @@ except ValueError:
 # ============================================================
 # config.py
 # Author: Mariam Saghir
+# Name: Mariam
 # Date: 2026-04-27
-# Description: Application configuration for Sakila Flask App(Task 2 in A1)
+# Description: Application configuration for Sakila Flask App(Task 2 in A1) 
+# ============================================================
+# config.py
+# Name: Mariam
+# Date: 2026-04-27
+# Description: Health check configuration also added
 # ============================================================
 
 import os
@@ -62,3 +68,6 @@ MYSQL_DB = os.environ.get('MYSQL_DB', 'sakila')
 
 # New variable added
 CONNECTION_TIMEOUT = int(os.environ.get('CONNECTION_TIMEOUT', '30'))
+# New variable added (different from branch 1)
+HEALTH_CHECK_INTERVAL = int(os.environ.get('HEALTH_CHECK_INTERVAL', '10'))
+
