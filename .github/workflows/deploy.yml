@@ -1,0 +1,109 @@
+# .github/workflows/deploy.yml
+
+name: Deploy — Sakila App
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # Only trigger on application code changes
+      - 'app.py'
+      - 'config.py'
+      - 'templates/**'
+      - 'static/**'
+      - 'Dockerfile'
+      - 'requirements.txt'
+      - 'docker-compose.yml'
+      # Explicitly ignore docs
+      # (push paths filtering handles this — we whitelist what matters)
+
+jobs:
+
+  # ─────────────────────────────────────────────
+  # JOB 1: Deploy to Staging
+  # ─────────────────────────────────────────────
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Simulate staging deployment
+        run: |
+          echo "============================================"
+          echo "  Deploying to STAGING environment"
+          echo "  Commit: ${{ github.sha }}"
+          echo "  Branch: ${{ github.ref_name }}"
+          echo "  Actor:  ${{ github.actor }}"
+          echo "============================================"
+
+          # Simulate pulling and running the image
+          docker pull mysql:8.0  # simulate pulling app image
+          echo "Image sakila-app:${{ github.sha }} pulled successfully"
+          echo "Container started on staging server (simulated)"
+
+      - name: Write Job Summary
+        run: |
+          echo "## 🚀 Staging Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | Staging |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit SHA | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deployed By | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Timestamp | $(date -u) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | ✅ Success |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify staging deployment
+        run: |
+          echo "📣 Slack notification: Deployment to STAGING successful!"
+          echo "📣 Email notification: sakila-app:${{ github.sha }} is live on staging."
+
+  # ─────────────────────────────────────────────
+  # JOB 2: Deploy to Production (requires manual approval)
+  # ─────────────────────────────────────────────
+  deploy-production:
+    name: 🏭 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    environment: production    # This triggers the approval gate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Simulate production deployment
+        run: |
+          echo "============================================"
+          echo "  Deploying to PRODUCTION environment"
+          echo "  Commit: ${{ github.sha }}"
+          echo "  ⚠️  This is PRODUCTION — proceed carefully!"
+          echo "============================================"
+          echo "Production deployment complete (simulated)"
+
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date();
+            const version = `v${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
+
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: version,
+              name: `Release ${version}`,
+              body: `## 🎉 Production Release ${version}\n\n**Commit:** ${context.sha}\n**Deployed by:** ${context.actor}\n\n### Changes\nSee commit history for full changelog.`,
+              draft: false,
+              prerelease: false
+            });
+            console.log(`Release ${version} created!`);
+
+      - name: Notify production deployment
+        run: |
+          echo "📣 Slack notification: Deployment to PRODUCTION successful!"
+          echo "📣 PagerDuty: Production release complete — monitoring enabled."
