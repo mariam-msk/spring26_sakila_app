@@ -4,7 +4,7 @@ name: Deploy — Sakila App
 
 on:
   push:
-    branches: [main]
+    branches: [main,feature/ci-pipeline]
     paths:
       # Only trigger on application code changes
       - 'app.py'
